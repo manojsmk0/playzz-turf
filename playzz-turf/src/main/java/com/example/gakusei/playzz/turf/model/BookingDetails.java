@@ -64,7 +64,3 @@ public class BookingDetails {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }
 
-// Added BookingStatus enum
-enum BookingStatus {
-    CONFIRMED, CANCELLED, COMPLETED
-}

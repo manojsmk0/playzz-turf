@@ -52,7 +52,7 @@ public class SlotController {
         return ResponseEntity.ok(allSlots);
     }
 
-    @PostMapping("/initialize")
+    @PostMapping("/admin/initialize")
     public ResponseEntity<String> initializeSlot() {
         if (turfSlotRepository.count() > 0) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -63,7 +63,7 @@ public class SlotController {
                 .body("Slots initialized for 4 days");
     }
 
-    @PostMapping("/maintain")
+    @PostMapping("/admin/maintain")
     public ResponseEntity<String> runRollingWindow() {
         turfSlotService.maintainRollingWindow();
         return ResponseEntity.ok("Slot window maintained successfully");

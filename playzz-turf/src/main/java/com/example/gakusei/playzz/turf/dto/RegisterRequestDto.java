@@ -1,14 +1,17 @@
 package com.example.gakusei.playzz.turf.dto;
 
-public class UserRequestDto {
+public class RegisterRequestDto {
     private String Username;
+    private String name;
     private String email;
     private String password;
 
-    public UserRequestDto() {}
+    public RegisterRequestDto() {
+    }
 
-    public UserRequestDto(String username, String email, String password) {
+    public RegisterRequestDto(String username, String name, String email, String password) {
         Username = username;
+        this.name = name;
         this.email = email;
         this.password = password;
     }
@@ -19,6 +22,14 @@ public class UserRequestDto {
 
     public void setUsername(String username) {
         Username = username;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getEmail() {

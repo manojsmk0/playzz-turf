@@ -1,8 +1,9 @@
 package com.example.gakusei.playzz.turf.implementation;
 
-import com.example.gakusei.playzz.turf.model.SlotStatus;
-import com.example.gakusei.playzz.turf.model.TurfSlot;
+import com.example.gakusei.playzz.turf.model.*;
+import com.example.gakusei.playzz.turf.repository.BookingDetailsRepo;
 import com.example.gakusei.playzz.turf.repository.TurfSlotRepository;
+import com.example.gakusei.playzz.turf.repository.UserRepo;
 import com.example.gakusei.playzz.turf.service.TurfSlotService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +27,14 @@ public class TurfSlotServiceImpl implements TurfSlotService {
     private static final int CANCELLATION_DEADLINE_HOURS = 48;
 
     private final TurfSlotRepository turfSlotRepo;
+    private final UserRepo userRepo;
+    private final BookingDetailsRepo bookingDetailsRepo;
 
     @Autowired
-    public TurfSlotServiceImpl(TurfSlotRepository turfSlotRepo) {
+    public TurfSlotServiceImpl(TurfSlotRepository turfSlotRepo,UserRepo userRepo,BookingDetailsRepo bookingDetailsRepo) {
         this.turfSlotRepo = turfSlotRepo;
+        this.userRepo = userRepo;
+        this.bookingDetailsRepo =bookingDetailsRepo;
     }
 
     @Transactional
@@ -138,6 +143,19 @@ public class TurfSlotServiceImpl implements TurfSlotService {
                 turfSlotRepo.save(slot);
 
                 // In real implementation: Create Booking record here
+                Users user = userRepo.findById(userId)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+
+                BookingDetails booking = new BookingDetails();
+
+                booking.setSlotId(slotId);
+                booking.setUserId(userId);
+                booking.setSlotTime(LocalDateTime.now());
+                booking.setCreatedAt(LocalDateTime.now());
+                booking.setBookingStatus(BookingStatus.CONFIRMED);
+
+                bookingDetailsRepo.save(booking);
+
                 return "Slot booked successfully";
 
             default:
@@ -169,6 +187,19 @@ public class TurfSlotServiceImpl implements TurfSlotService {
         turfSlotRepo.save(slot);
 
         // In real implementation: Update Booking record here
+        Users user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        BookingDetails booking = new BookingDetails();
+
+        booking.setSlotId(slotId);
+        booking.setUserId(userId);
+        booking.setSlotTime(LocalDateTime.now());
+        booking.setCreatedAt(LocalDateTime.now());
+        booking.setBookingStatus(BookingStatus.CANCELLED);
+
+        bookingDetailsRepo.save(booking);
+
         return "Booking cancelled successfully";
     }
 
