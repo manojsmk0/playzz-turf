@@ -6,6 +6,7 @@ import com.example.gakusei.playzz.turf.dto.RegisterRequestDto;
 import com.example.gakusei.playzz.turf.model.Role;
 import com.example.gakusei.playzz.turf.model.Users;
 import com.example.gakusei.playzz.turf.repository.UserRepo;
+import com.example.gakusei.playzz.turf.service.EmailService;
 import com.example.gakusei.playzz.turf.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,11 +21,13 @@ public class UserServiceImpl implements UserService {
 
     private UserRepo userRepo;
     private PasswordEncoder passwordEncoder;
+    private EmailService emailService;
 
     @Autowired
-    public UserServiceImpl(UserRepo userRepo, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepo userRepo, PasswordEncoder passwordEncoder,EmailService emailService) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
+        this.emailService =emailService;
     }
 
     @Override
@@ -41,7 +44,12 @@ public class UserServiceImpl implements UserService {
         String encodedPassword =passwordEncoder.encode(registerRequestDto.getPassword());
         users.setPassword(encodedPassword);
         users.setCreatedTimeStamp(LocalDateTime.now());
-            return userRepo.save(users);
+            Users savedUser =userRepo.save(users);
+
+        emailService.sendRegisteredEmail(savedUser.getEmail(), savedUser.getName());
+
+        return savedUser;
+
     }
     @Override
     public Users loginUser(LoginRequestDto loginRequestDto){

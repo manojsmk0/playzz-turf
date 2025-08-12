@@ -8,6 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @RestController
@@ -30,19 +33,21 @@ public class SlotController {
 
     @PostMapping("/bookslot")
     public ResponseEntity<String> bookSlot(
-            @RequestParam Long slotId,
-            @RequestParam Long userId) {
+            @RequestParam LocalDate date, @RequestParam LocalTime startTime,@RequestParam LocalTime endTime,@RequestParam Long userId)
+            {
 
-        String result = turfSlotService.bookSlot(slotId, userId);
+        String result = turfSlotService.bookSlot( date,startTime,endTime,userId);
         return ResponseEntity.ok(result);
     }
 
-    @PostMapping("/cancelslot")
+    @PutMapping("/cancelslot")
     public ResponseEntity<String> cancelSlot(
-            @RequestParam Long bookingId,  // Changed from slotId to bookingId
+            @RequestParam LocalDate date,
+            @RequestParam LocalTime startTime,
+            @RequestParam LocalTime endTime,
             @RequestParam Long userId) {
 
-        String result = turfSlotService.cancelSlot(bookingId, userId);
+        String result = turfSlotService.cancelSlot(date, startTime, endTime, userId);
         return ResponseEntity.ok(result);
     }
 

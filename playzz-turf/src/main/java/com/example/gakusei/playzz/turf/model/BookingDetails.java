@@ -2,7 +2,10 @@ package com.example.gakusei.playzz.turf.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "BOOKING_DETAILS")
@@ -13,54 +16,113 @@ public class BookingDetails {
     private Long id;
 
     @NotNull
-    private Long slotId;
+    private Integer slotId;
+    @NotNull
+    private LocalDate slotDate;
 
     @NotNull
-    private LocalDateTime slotTime;
+    private LocalTime slotStartTime;
+
+    @NotNull
+    private LocalTime slotEndTime;
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    private BookingStatus bookingStatus;  // Changed from SlotStatus to BookingStatus
+    private BookingStatus bookingStatus;
+
+    private LocalDateTime canceledAt;
 
     @NotNull
-    private Long userId;  // Changed from userName to userId
+    private Long userId;
 
     @NotNull
     private LocalDateTime createdAt;
 
-    // Removed userEmail field
+    public BookingDetails() {
+    }
 
-    public BookingDetails() {}
-
-    // Updated constructor
-    public BookingDetails(Long id, Long slotId, LocalDateTime slotTime,
-                          BookingStatus bookingStatus, Long userId,
-                          LocalDateTime createdAt) {
+    public BookingDetails(Long id, Integer slotId, LocalDate slotDate, LocalTime slotStartTime, LocalTime slotEndTime, BookingStatus bookingStatus, LocalDateTime canceledAt, Long userId, LocalDateTime createdAt) {
         this.id = id;
         this.slotId = slotId;
-        this.slotTime = slotTime;
+        this.slotDate = slotDate;
+        this.slotStartTime = slotStartTime;
+        this.slotEndTime = slotEndTime;
         this.bookingStatus = bookingStatus;
+        this.canceledAt = canceledAt;
         this.userId = userId;
         this.createdAt = createdAt;
     }
 
-    // Getters and setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Long getSlotId() { return slotId; }
-    public void setSlotId(Long slotId) { this.slotId = slotId; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public LocalDateTime getSlotTime() { return slotTime; }
-    public void setSlotTime(LocalDateTime slotTime) { this.slotTime = slotTime; }
+    public Integer getSlotId() {
+        return slotId;
+    }
 
-    public BookingStatus getBookingStatus() { return bookingStatus; }
-    public void setBookingStatus(BookingStatus bookingStatus) { this.bookingStatus = bookingStatus; }
+    public void setSlotId(Integer slotId) {
+        this.slotId = slotId;
+    }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public LocalDate getSlotDate() {
+        return slotDate;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setSlotDate(LocalDate slotDate) {
+        this.slotDate = slotDate;
+    }
+
+    public LocalTime getSlotStartTime() {
+        return slotStartTime;
+    }
+
+    public void setSlotStartTime(LocalTime slotStartTime) {
+        this.slotStartTime = slotStartTime;
+    }
+
+    public LocalTime getSlotEndTime() {
+        return slotEndTime;
+    }
+
+    public void setSlotEndTime(LocalTime slotEndTime) {
+        this.slotEndTime = slotEndTime;
+    }
+
+    public BookingStatus getBookingStatus() {
+        return bookingStatus;
+    }
+
+    public void setBookingStatus(BookingStatus bookingStatus) {
+        this.bookingStatus = bookingStatus;
+    }
+
+    public LocalDateTime getCanceledAt() {
+        return canceledAt;
+    }
+
+    public void setCanceledAt(LocalDateTime canceledAt) {
+        this.canceledAt = canceledAt;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }
 

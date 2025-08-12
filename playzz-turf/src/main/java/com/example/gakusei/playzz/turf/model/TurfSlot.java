@@ -1,10 +1,12 @@
 package com.example.gakusei.playzz.turf.model;
 
 import jakarta.persistence.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "TURF_SLOT")
@@ -14,13 +16,15 @@ public class TurfSlot {
     @SequenceGenerator(name = "turf_slot_seq_gen", sequenceName = "turf_slot_seq", allocationSize = 1)
     private Long id;
     @NotNull
+    private Integer slotId;
+    @NotNull
     private Integer totalSlots =10;
     @NotNull
     private Integer availableSlots = 10;
     @NotNull
-    private LocalDateTime startTime;
+    private LocalTime slotStartTime;
     @NotNull
-    private LocalDateTime endTime;
+    private LocalTime slotEndTime;
     @NotNull
     private Long durationInMinutes;
     @NotNull
@@ -35,12 +39,13 @@ public class TurfSlot {
     public TurfSlot() {
     }
 
-    public TurfSlot(Long id, Integer totalSlots, Integer availableSlots, LocalDateTime startTime, LocalDateTime endTime, Long durationInMinutes, LocalDate slotDate, SlotStatus slotStatus, LocalDateTime statusUpdatedTime) {
+    public TurfSlot(Long id, Integer slotId, Integer totalSlots, Integer availableSlots, LocalTime slotStartTime, LocalTime slotEndTime, Long durationInMinutes, LocalDate slotDate, SlotStatus slotStatus, LocalDateTime statusUpdatedTime) {
         this.id = id;
+        this.slotId = slotId;
         this.totalSlots = totalSlots;
         this.availableSlots = availableSlots;
-        this.startTime = startTime;
-        this.endTime = endTime;
+        this.slotStartTime = slotStartTime;
+        this.slotEndTime = slotEndTime;
         this.durationInMinutes = durationInMinutes;
         this.slotDate = slotDate;
         this.slotStatus = slotStatus;
@@ -53,6 +58,14 @@ public class TurfSlot {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Integer getSlotId() {
+        return slotId;
+    }
+
+    public void setSlotId(Integer slotId) {
+        this.slotId = slotId;
     }
 
     public Integer getTotalSlots() {
@@ -71,20 +84,20 @@ public class TurfSlot {
         this.availableSlots = availableSlots;
     }
 
-    public LocalDateTime getStartTime() {
-        return startTime;
+    public LocalTime getSlotStartTime() {
+        return slotStartTime;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
+    public void setSlotStartTime(LocalTime slotStartTime) {
+        this.slotStartTime = slotStartTime;
     }
 
-    public LocalDateTime getEndTime() {
-        return endTime;
+    public LocalTime getSlotEndTime() {
+        return slotEndTime;
     }
 
-    public void setEndTime(LocalDateTime endTime) {
-        this.endTime = endTime;
+    public void setSlotEndTime(LocalTime slotEndTime) {
+        this.slotEndTime = slotEndTime;
     }
 
     public Long getDurationInMinutes() {

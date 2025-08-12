@@ -4,8 +4,12 @@ package com.example.gakusei.playzz.turf.configure;
 import com.example.gakusei.playzz.turf.jwt.JwtAuthFilter;
 import com.example.gakusei.playzz.turf.jwt.JwtAuthenticationEntryPoint;
 
+import com.example.gakusei.playzz.turf.model.Role;
+import com.example.gakusei.playzz.turf.model.Users;
+import com.example.gakusei.playzz.turf.repository.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.time.LocalDateTime;
 
 
 @Configuration
@@ -29,6 +34,7 @@ public class AppConfig {
 
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private JwtAuthFilter jwtAuthFilter;
+
 
     @Autowired
     public AppConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, JwtAuthFilter jwtAuthFilter) {
@@ -41,6 +47,22 @@ public class AppConfig {
     @Bean
     public PasswordEncoder passwordEncoder(){
         return  new BCryptPasswordEncoder();
+    }
+    @Bean
+    CommandLineRunner initAdmin(UserRepo repo, PasswordEncoder encoder) {
+        return args -> {
+            if (!repo.existsByRole(Role.ADMIN)) {
+                Users admin = new Users();
+                admin.setName("Administrator");
+                admin.setUserName("admin");
+                admin.setEmail("admin@example.com");
+                admin.setPassword(encoder.encode("admin123"));
+                admin.setRole(Role.ADMIN);
+                admin.setCreatedTimeStamp(LocalDateTime.now());
+                repo.save(admin);
+                System.out.println(" Default admin created");
+            }
+        };
     }
 
 

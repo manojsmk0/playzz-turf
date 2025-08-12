@@ -4,6 +4,7 @@ import com.example.gakusei.playzz.turf.model.*;
 import com.example.gakusei.playzz.turf.repository.BookingDetailsRepo;
 import com.example.gakusei.playzz.turf.repository.TurfSlotRepository;
 import com.example.gakusei.playzz.turf.repository.UserRepo;
+import com.example.gakusei.playzz.turf.service.EmailService;
 import com.example.gakusei.playzz.turf.service.TurfSlotService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,60 +30,61 @@ public class TurfSlotServiceImpl implements TurfSlotService {
     private final TurfSlotRepository turfSlotRepo;
     private final UserRepo userRepo;
     private final BookingDetailsRepo bookingDetailsRepo;
+    private final EmailService emailService;
 
     @Autowired
-    public TurfSlotServiceImpl(TurfSlotRepository turfSlotRepo,UserRepo userRepo,BookingDetailsRepo bookingDetailsRepo) {
+    public TurfSlotServiceImpl(TurfSlotRepository turfSlotRepo, UserRepo userRepo, BookingDetailsRepo bookingDetailsRepo,EmailService emailService) {
         this.turfSlotRepo = turfSlotRepo;
         this.userRepo = userRepo;
-        this.bookingDetailsRepo =bookingDetailsRepo;
+        this.bookingDetailsRepo = bookingDetailsRepo;
+        this.emailService =emailService;
     }
 
     @Transactional
     public void generateSlotsForDate(LocalDate date) {
         LocalTime startTime = LocalTime.of(6, 0);
         LocalTime endTime = LocalTime.of(22, 0);
-        long durationInMinutes = 120;  // Use long instead of int
+        long durationInMinutes = DEFAULT_SLOT_DURATION;
 
-        // Create datetime boundaries
-        LocalDateTime slotStart = LocalDateTime.of(date, startTime);
-        LocalDateTime slotEndBoundary = LocalDateTime.of(date, endTime);
+        LocalTime slotStart = startTime;
+        int slotIdCounter = 1;  // Start at 1
 
-        while (slotStart.isBefore(slotEndBoundary)) {
-            LocalDateTime nextSlot = slotStart.plusMinutes(durationInMinutes);
+        while (slotStart.isBefore(endTime)) {
+            LocalTime nextSlot = slotStart.plusMinutes(durationInMinutes);
 
-            // Stop if next slot would exceed boundary
-            if (nextSlot.isAfter(slotEndBoundary)) {
-                break;
-            }
+            if (nextSlot.isAfter(endTime)) break;
 
-            // Check if slot exists
-            if (turfSlotRepo.existsBySlotDateAndStartTime(date, slotStart)) {
-                logger.info("Slot at {} already exists, skipping", slotStart);
+            if (turfSlotRepo.existsBySlotDateAndSlotStartTime(date, slotStart)) {
+                logger.info("Slot on {} at {} already exists, skipping", date, slotStart);
                 slotStart = nextSlot;
+                slotIdCounter++;  // still increment since time moves forward
                 continue;
             }
 
-            // Create new slot
             TurfSlot slot = new TurfSlot();
+            slot.setSlotId(slotIdCounter);  // Assign 1 to 8 here
             slot.setTotalSlots(10);
             slot.setAvailableSlots(10);
             slot.setSlotDate(date);
-            slot.setStartTime(slotStart);
-            slot.setEndTime(nextSlot);
+            slot.setSlotStartTime(slotStart);
+            slot.setSlotEndTime(nextSlot);
             slot.setDurationInMinutes(durationInMinutes);
             slot.setSlotStatus(SlotStatus.OPEN);
             slot.setStatusUpdatedTime(LocalDateTime.now());
 
             try {
                 turfSlotRepo.save(slot);
-                logger.info("Created slot: {} to {}", slotStart, nextSlot);
+                logger.info("Created slot: {} {} - {} with slotID {}", date, slotStart, nextSlot, slotIdCounter);
             } catch (DataIntegrityViolationException e) {
                 logger.error("Failed to create slot: {}", e.getMessage());
             }
 
             slotStart = nextSlot;
+            slotIdCounter++;  // increment counter for next slot
         }
     }
+
+
     @Transactional
     public void initializeSlots() {
         LocalDate today = LocalDate.now();
@@ -97,11 +99,9 @@ public class TurfSlotServiceImpl implements TurfSlotService {
         LocalDate today = LocalDate.now();
         LocalDate purgeDate = today.minusDays(1);
 
-        // Delete slots older than yesterday
         int deleted = turfSlotRepo.deleteBySlotDateBefore(purgeDate);
         logger.info("Deleted {} old slots", deleted);
 
-        // Create slots for new window
         LocalDate lastDate = today.plusDays(ROLLING_WINDOW_DAYS - 1);
         for (LocalDate date = today; !date.isAfter(lastDate); date = date.plusDays(1)) {
             if (!turfSlotRepo.existsBySlotDate(date)) {
@@ -111,73 +111,80 @@ public class TurfSlotServiceImpl implements TurfSlotService {
     }
 
     public List<TurfSlot> getAvailableSlots() {
-        LocalDateTime now = LocalDateTime.now();
-        return turfSlotRepo.findAvailableSlots(now);
+        LocalDate today = LocalDate.now();
+        LocalTime currentTime = LocalTime.now();
+        return turfSlotRepo.findAvailableSlots(today, currentTime);
     }
 
     @Transactional
-    public String bookSlot(Long slotId, Long userId) {
-        Optional<TurfSlot> optional = turfSlotRepo.findById(slotId);
+    public String bookSlot(LocalDate date, LocalTime startTime, LocalTime endTime, Long userId) {
+        Optional<TurfSlot> optional = turfSlotRepo.findBySlotDateAndSlotStartTime(date, startTime);
         if (optional.isEmpty()) return "Slot not found";
 
         TurfSlot slot = optional.get();
 
-        if (slot.getEndTime().isBefore(LocalDateTime.now())) {
-            return "Cannot book expired slot";
+        LocalDateTime slotStartDateTime = LocalDateTime.of(slot.getSlotDate(), slot.getSlotStartTime());
+        LocalDateTime slotEndDateTime = LocalDateTime.of(slot.getSlotDate(), slot.getSlotEndTime());
+        LocalDateTime now = LocalDateTime.now();
+
+        if (slotEndDateTime.isBefore(now)) return "Cannot book expired slot";
+
+        if (bookingDetailsRepo.existsBySlotIdAndUserIdAndBookingStatus(slot.getId().intValue(), userId, BookingStatus.CONFIRMED)) {
+            return "You already have a booking for this slot";
         }
 
-        switch (slot.getSlotStatus()) {
-            case BOOKED:
-                return "Slot is already booked";
+        if (slot.getAvailableSlots() <= 0) return "No available slots";
 
-            case OPEN:
-                if (slot.getAvailableSlots() <= 0) {
-                    return "No available slots";
-                }
+        slot.setAvailableSlots(slot.getAvailableSlots() - 1);
+        if (slot.getAvailableSlots() == 0) slot.setSlotStatus(SlotStatus.BOOKED);
+        slot.setStatusUpdatedTime(now);
+        turfSlotRepo.save(slot);
 
-                slot.setAvailableSlots(slot.getAvailableSlots() - 1);
-                if (slot.getAvailableSlots() == 0) {
-                    slot.setSlotStatus(SlotStatus.BOOKED);
-                }
-                slot.setStatusUpdatedTime(LocalDateTime.now());
-                turfSlotRepo.save(slot);
+        BookingDetails booking = new BookingDetails();
+        booking.setSlotId(slot.getId().intValue());
+        booking.setUserId(userId);
+        booking.setSlotDate(slot.getSlotDate());
+        booking.setSlotStartTime(slot.getSlotStartTime());
+        booking.setSlotEndTime(slot.getSlotEndTime());
+        booking.setCreatedAt(now);
+        booking.setBookingStatus(BookingStatus.CONFIRMED);
+        bookingDetailsRepo.save(booking);
 
-                // In real implementation: Create Booking record here
-                Users user = userRepo.findById(userId)
-                        .orElseThrow(() -> new RuntimeException("User not found"));
+        Users user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-                BookingDetails booking = new BookingDetails();
+        emailService.sendConfirmBookingEmail(
+                user.getEmail(),
+                user.getName(),
+                slot.getSlotDate(),
+                slot.getSlotStartTime(),
+                slot.getSlotEndTime()
+        );
 
-                booking.setSlotId(slotId);
-                booking.setUserId(userId);
-                booking.setSlotTime(LocalDateTime.now());
-                booking.setCreatedAt(LocalDateTime.now());
-                booking.setBookingStatus(BookingStatus.CONFIRMED);
+        return "Slot booked successfully";
 
-                bookingDetailsRepo.save(booking);
-
-                return "Slot booked successfully";
-
-            default:
-                return "Slot is not available for booking";
-        }
     }
 
     @Transactional
-    public String cancelSlot(Long slotId, Long userId) {
-        Optional<TurfSlot> optional = turfSlotRepo.findById(slotId);
+    public String cancelSlot(LocalDate date, LocalTime startTime, LocalTime endTime, Long userId) {
+        Optional<TurfSlot> optional = turfSlotRepo.findBySlotDateAndSlotStartTime(date, startTime);
         if (optional.isEmpty()) return "Slot not found";
 
         TurfSlot slot = optional.get();
         LocalDateTime now = LocalDateTime.now();
+        LocalDateTime slotStartDateTime = LocalDateTime.of(slot.getSlotDate(), slot.getSlotStartTime());
 
-        if (slot.getSlotStatus() != SlotStatus.BOOKED && slot.getAvailableSlots() >= slot.getTotalSlots()) {
-            return "Slot is not booked";
-        }
-
-        if (now.isAfter(slot.getStartTime().minusHours(CANCELLATION_DEADLINE_HOURS))) {
+        if (now.isAfter(slotStartDateTime.minusHours(CANCELLATION_DEADLINE_HOURS))) {
             return "Cancellation must be done " + CANCELLATION_DEADLINE_HOURS + " hours before start time";
         }
+
+        BookingDetails booking = bookingDetailsRepo
+                .findBySlotIdAndUserIdAndBookingStatus(slot.getId().intValue(), userId, BookingStatus.CONFIRMED)
+                .orElseThrow(() -> new RuntimeException("No active booking found to cancel"));
+
+        booking.setBookingStatus(BookingStatus.CANCELLED);
+        booking.setCanceledAt(now);
+        bookingDetailsRepo.save(booking);
 
         slot.setAvailableSlots(slot.getAvailableSlots() + 1);
         if (slot.getSlotStatus() == SlotStatus.BOOKED) {
@@ -186,21 +193,19 @@ public class TurfSlotServiceImpl implements TurfSlotService {
         slot.setStatusUpdatedTime(now);
         turfSlotRepo.save(slot);
 
-        // In real implementation: Update Booking record here
         Users user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        BookingDetails booking = new BookingDetails();
-
-        booking.setSlotId(slotId);
-        booking.setUserId(userId);
-        booking.setSlotTime(LocalDateTime.now());
-        booking.setCreatedAt(LocalDateTime.now());
-        booking.setBookingStatus(BookingStatus.CANCELLED);
-
-        bookingDetailsRepo.save(booking);
+        emailService.sendConfirmCancelEmail(
+                user.getEmail(),
+                user.getName(),
+                slot.getSlotDate(),
+                slot.getSlotStartTime(),
+                slot.getSlotEndTime()
+        );
 
         return "Booking cancelled successfully";
+
     }
 
     public List<TurfSlot> viewAllSlots() {
