@@ -12,6 +12,6 @@ public interface TurfSlotService {
     void maintainRollingWindow();
     List<TurfSlot> getAvailableSlots();
     List<TurfSlot> viewAllSlots();
-    String bookSlot(LocalDate date, LocalTime startTime, LocalTime endTime, Long userId);  // Added userId parameter
-    String cancelSlot(LocalDate date, LocalTime startTime, LocalTime endTime, Long userId); // Added userId parameter
+    String bookSlot(LocalDate date, LocalTime startTime, LocalTime endTime, Long userId);
+    String cancelSlot(LocalDate date, LocalTime startTime, LocalTime endTime, Long userId);
 }
