@@ -1,5 +1,6 @@
 package com.example.gakusei.playzz.turf.implementation;
 
+import com.example.gakusei.playzz.turf.dto.TurfSlotDto;
 import com.example.gakusei.playzz.turf.model.*;
 import com.example.gakusei.playzz.turf.repository.BookingDetailsRepo;
 import com.example.gakusei.playzz.turf.repository.TurfSlotRepository;
@@ -84,6 +85,30 @@ public class TurfSlotServiceImpl implements TurfSlotService {
         }
     }
 
+    public List<TurfSlotDto> getAvailableSlotsForUser(Long userId) {
+        LocalDate today = LocalDate.now();
+        LocalTime now = LocalTime.now();
+        List<TurfSlot> slots = turfSlotRepo.findAvailableSlots(today, now);
+
+        return slots.stream().map(slot -> {
+            TurfSlotDto dto = new TurfSlotDto();
+            dto.setId(slot.getId());
+            dto.setSlotId(slot.getSlotId());
+            dto.setSlotDate(slot.getSlotDate());
+            dto.setSlotStartTime(slot.getSlotStartTime());
+            dto.setSlotEndTime(slot.getSlotEndTime());
+            dto.setAvailableSlots(slot.getAvailableSlots());
+            dto.setSlotStatus(slot.getSlotStatus().name());
+
+            boolean bookedByUser = bookingDetailsRepo.existsBySlotIdAndUserIdAndBookingStatus(
+                    slot.getId().intValue(), userId, BookingStatus.CONFIRMED
+            );
+            dto.setBookedByUser(bookedByUser);
+
+            return dto;
+        }).toList();
+    }
+
 
     @Transactional
     public void initializeSlots() {
@@ -97,11 +122,12 @@ public class TurfSlotServiceImpl implements TurfSlotService {
     @Transactional
     public void maintainRollingWindow() {
         LocalDate today = LocalDate.now();
-        LocalDate purgeDate = today.minusDays(1);
 
-        int deleted = turfSlotRepo.deleteBySlotDateBefore(purgeDate);
+        // Delete all slots strictly before today
+        int deleted = turfSlotRepo.deleteBySlotDateBefore(today);
         logger.info("Deleted {} old slots", deleted);
 
+        // Generate slots for the next 4 days starting today
         LocalDate lastDate = today.plusDays(ROLLING_WINDOW_DAYS - 1);
         for (LocalDate date = today; !date.isAfter(lastDate); date = date.plusDays(1)) {
             if (!turfSlotRepo.existsBySlotDate(date)) {
@@ -109,6 +135,7 @@ public class TurfSlotServiceImpl implements TurfSlotService {
             }
         }
     }
+
 
     public List<TurfSlot> getAvailableSlots() {
         LocalDate today = LocalDate.now();

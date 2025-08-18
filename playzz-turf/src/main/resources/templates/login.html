@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Playzz Turf</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; }
+        label { display: block; margin: 10px 0 5px; }
+        input { padding: 5px; width: 200px; }
+        button { padding: 5px 10px; margin-top: 10px; }
+        .error { color: red; margin-top: 10px; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+
+<h2>Login</h2>
+
+<div id="errorMsg" class="error"></div>
+
+<form id="loginForm">
+    <label>UserName:</label>
+    <input type="text" id="userName" placeholder="Enter userName" required>
+
+    <label>Password:</label>
+    <input type="password" id="password" placeholder="Enter password" required>
+
+    <button type="submit">Login</button>
+</form>
+
+<p>Don’t have an account? <a href="/api/public/playzzturf/register">Register here</a></p>
+
+<script>
+    const form = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const userName = document.getElementById('userName').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            // Send form-encoded data
+            const formData = new URLSearchParams();
+            formData.append('userName', userName);
+            formData.append('password', password);
+
+            // POST login withCredentials so cookie is set automatically
+            await axios.post('/api/public/playzzturf/login', formData, {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                withCredentials: true
+            });
+
+            // Successful login redirects to booking page
+            window.location.href = '/api/playzzturf/booking';
+        } catch (err) {
+            console.error(err);
+            errorMsg.textContent = err.response?.data || 'Login failed. Check userName/password.';
+        }
+    });
+</script>
+
+</body>
+</html>
