@@ -1,15 +1,82 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>About - Playzz Turf</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Reuse your existing stylesheet -->
+    <link rel="stylesheet" th:href="@{/css/home.css}" />
 </head>
 <body>
-
+<!-- Navigation (keeps full green header) -->
 <div th:replace="fragments/nav :: body"></div>
 
-<h1>About Playzz Turf</h1>
-<p>We provide the best turf booking experience in town!</p>
+<!-- Hero / Intro -->
+<section class="hero">
+    <div class="container">
+        <h1 class="hero__title">About Playzz Turf</h1>
+        <p class="hero__subtitle">
+            Built to make sports accessible, hassle-free, and fun for everyone—from casual weekend players to competitive teams.
+        </p>
+        <div class="hero__cta-group">
+            <a class="btn btn--primary" th:href="@{/register}">Join the Community</a>
+            <a class="btn btn--secondary" th:href="@{/login}">Book a Slot</a>
+        </div>
+    </div>
+</section>
 
+<!-- Our Story -->
+<section>
+    <div class="container section--alt">
+        <h2 class="mt-0">Our Story</h2>
+        <div class="content">
+            <p>
+                We started with the belief that finding and booking a turf should not be a struggle.
+                Long phone calls, uncertain availability, and last-minute cancellations used to frustrate players.
+            </p>
+            <p class="mb-0">
+                That’s why Playzz Turf was created—to bring everything online, transparent, and at your fingertips.
+                Today, players discover turfs, see real-time availability, and confirm bookings in seconds.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- What We Offer -->
+<section>
+    <div class="container section--alt">
+        <h2 class="mt-0">What We Offer</h2>
+        <div class="content">
+            <ul class="list--check">
+                <li><strong>Easy Booking:</strong> Reserve your turf in seconds with real-time availability.</li>
+                <li><strong>Quality Experience:</strong> Well-maintained fields with top-notch facilities.</li>
+                <li><strong>Flexible Slots:</strong> Choose times that fit schedules without the chaos.</li>
+                <li><strong>Community Vibes:</strong> Connect with players, form teams, and enjoy the game together.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section>
+    <div class="container section--alt">
+        <h2 class="mt-0">Why Choose Playzz Turf?</h2>
+        <div class="content">
+            <p>
+                Because it’s about more than just bookings. It’s about the game, the players, and the joy of playing together.
+                That’s why Playzz Turf is the go-to platform for hundreds of players who want reliable, seamless, and enjoyable experiences.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section>
+    <div class="container section--alt cta">
+        <h2 class="mt-0">Join Us Today</h2>
+        <p>Be a part of the Playzz community and experience the future of turf booking.</p>
+        <a class="btn btn--secondary" th:href="@{/register}">Get Started</a>
+    </div>
+</section>
 </body>
 </html>

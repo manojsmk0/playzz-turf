@@ -3,135 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <title>Playzz Turf Booking</title>
-    <link rel="stylesheet" href="/css/styles.css"> <!-- fixed static path -->
-    <style>
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background-color: #f2f2f2; }
-        button { padding: 5px 10px; }
-    </style>
+    <link rel="stylesheet" href="/css/styles.css"> <!-- your existing base if needed -->
+    <link rel="stylesheet" href="/css/booking.css"> <!-- new themed styles -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
 <div th:replace="fragments/nav :: body"></div>
 
+<main class="page">
+    <h1>Playzz Turf Booking</h1>
 
-<h1>Playzz Turf Booking</h1>
+    <div class="controls">
+        <label for="dateSelect">Select Date:</label>
+        <select id="dateSelect"></select>
 
-<label for="dateSelect">Select Date:</label>
-<select id="dateSelect"></select>
+        <label>
+            <input type="checkbox" id="availableOnly" checked>
+            Show Available Slots Only
+        </label>
+    </div>
 
-<label style="margin-left:20px;">
-    <input type="checkbox" id="availableOnly" checked>
-    Show Available Slots Only
-</label>
-
-<h2>Slots</h2>
-<table>
-    <thead>
-    <tr>
-        <th>Slot #</th>
-        <th>Start Time</th>
-        <th>End Time</th>
-        <th>Status</th>
-        <th>Action</th>
-    </tr>
-    </thead>
-    <tbody id="slotsBody"></tbody>
-</table>
+    <h2>Slots</h2>
+    <div class="card">
+        <table>
+            <thead>
+            <tr>
+                <th>Slot #</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody id="slotsBody"></tbody>
+        </table>
+    </div>
+</main>
 
 <script>
     let allSlots = [];
 
     // Initialize 4-day rolling calendar
     function initCalendar() {
-        const dateSelect = document.getElementById("dateSelect");
-        dateSelect.innerHTML = '';
-        const today = new Date();
-        for (let i = 0; i < 4; i++) {
-            const date = new Date(today);
-            date.setDate(today.getDate() + i);
-            const option = document.createElement("option");
-            option.value = date.toISOString().split('T')[0];
-            option.text = date.toDateString();
-            dateSelect.appendChild(option);
-        }
+      const dateSelect = document.getElementById("dateSelect");
+      dateSelect.innerHTML = '';
+      const today = new Date();
+      for (let i = 0; i < 4; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        const option = document.createElement("option");
+        option.value = date.toISOString().split('T')[0];
+        option.text = date.toDateString();
+        dateSelect.appendChild(option);
+      }
     }
 
     // Fetch available slots (cookie JWT used automatically)
     async function fetchSlots() {
-        try {
-            const response = await axios.get('/api/playzzturf/availableslots', { withCredentials: true });
-            allSlots = response.data;
-            renderSlots();
-        } catch (err) {
-            console.error(err);
-            alert("Failed to fetch slots. Are you logged in?");
-            window.location.href = '/api/public/playzzturf/login';
-        }
+      try {
+        const response = await axios.get('/api/playzzturf/availableslots', { withCredentials: true });
+        allSlots = response.data;
+        renderSlots();
+      } catch (err) {
+        console.error(err);
+        alert("Failed to fetch slots. Are you logged in?");
+        window.location.href = '/api/public/playzzturf/login';
+      }
     }
 
     // Render slots
     function renderSlots() {
-        const dateSelect = document.getElementById("dateSelect");
-        const availableOnly = document.getElementById("availableOnly").checked;
-        const selectedDate = dateSelect.value;
-        const tbody = document.getElementById("slotsBody");
-        tbody.innerHTML = '';
+      const dateSelect = document.getElementById("dateSelect");
+      const availableOnly = document.getElementById("availableOnly").checked;
+      const selectedDate = dateSelect.value;
+      const tbody = document.getElementById("slotsBody");
+      tbody.innerHTML = '';
 
-        const filtered = allSlots.filter(slot => slot.slotDate === selectedDate)
-                                 .filter(slot => !availableOnly || slot.availableSlots > 0);
+      const filtered = allSlots.filter(slot => slot.slotDate === selectedDate)
+                               .filter(slot => !availableOnly || slot.availableSlots > 0);
 
-        filtered.sort((a, b) => a.slotStartTime.localeCompare(b.slotStartTime));
+      filtered.sort((a, b) => a.slotStartTime.localeCompare(b.slotStartTime));
 
-        filtered.forEach(slot => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${slot.slotId}</td>
-                <td>${slot.slotStartTime}</td>
-                <td>${slot.slotEndTime}</td>
-                <td>${slot.availableSlots > 0 ? 'Open' : 'Booked'}</td>
-                <td>
-                    ${slot.bookedByUser ?
-                        `<button onclick="cancelSlot('${slot.slotDate}', '${slot.slotStartTime}', '${slot.slotEndTime}')">Cancel</button>` :
-                        `<button ${slot.availableSlots === 0 ? 'disabled' : ''} onclick="bookSlot('${slot.slotDate}', '${slot.slotStartTime}', '${slot.slotEndTime}')">Book</button>`
-                    }
-                </td>
-            `;
-            tbody.appendChild(row);
-        });
+      filtered.forEach(slot => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${slot.slotId}</td>
+          <td>${slot.slotStartTime}</td>
+          <td>${slot.slotEndTime}</td>
+          <td>${slot.availableSlots > 0 ? 'Open' : 'Booked'}</td>
+          <td>
+            ${slot.bookedByUser
+              ? `<button class="cancel-btn" onclick="cancelSlot('${slot.slotDate}', '${slot.slotStartTime}', '${slot.slotEndTime}')">Cancel</button>`
+              : `<button ${slot.availableSlots === 0 ? 'disabled' : ''} onclick="bookSlot('${slot.slotDate}', '${slot.slotStartTime}', '${slot.slotEndTime}')">Book</button>`
+            }
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
     }
 
     // Book slot
     async function bookSlot(date, startTime, endTime) {
-        try {
-            const formData = new URLSearchParams();
-            formData.append('date', date);
-            formData.append('startTime', startTime);
-            formData.append('endTime', endTime);
+      try {
+        const formData = new URLSearchParams();
+        formData.append('date', date);
+        formData.append('startTime', startTime);
+        formData.append('endTime', endTime);
 
-            const response = await axios.post('/api/playzzturf/bookslot', formData, { withCredentials: true });
-            alert(response.data);
-            await fetchSlots();
-        } catch (err) {
-            alert(err.response?.data || err);
-        }
+        const response = await axios.post('/api/playzzturf/bookslot', formData, { withCredentials: true });
+        alert(response.data);
+        await fetchSlots();
+      } catch (err) {
+        alert(err.response?.data || err);
+      }
     }
 
     // Cancel slot
     async function cancelSlot(date, startTime, endTime) {
-        try {
-            const formData = new URLSearchParams();
-            formData.append('date', date);
-            formData.append('startTime', startTime);
-            formData.append('endTime', endTime);
+      try {
+        const formData = new URLSearchParams();
+        formData.append('date', date);
+        formData.append('startTime', startTime);
+        formData.append('endTime', endTime);
 
-            const response = await axios.put('/api/playzzturf/cancelslot', formData, { withCredentials: true });
-            alert(response.data);
-            await fetchSlots();
-        } catch (err) {
-            alert(err.response?.data || err);
-        }
+        const response = await axios.put('/api/playzzturf/cancelslot', formData, { withCredentials: true });
+        alert(response.data);
+        await fetchSlots();
+      } catch (err) {
+        alert(err.response?.data || err);
+      }
     }
 
     // Event listeners
@@ -141,6 +141,5 @@
     initCalendar();
     fetchSlots();
 </script>
-
 </body>
 </html>

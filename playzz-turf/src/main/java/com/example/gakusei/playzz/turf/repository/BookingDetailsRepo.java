@@ -3,6 +3,7 @@ package com.example.gakusei.playzz.turf.repository;
 import com.example.gakusei.playzz.turf.model.BookingDetails;
 import com.example.gakusei.playzz.turf.model.BookingStatus;
 import com.example.gakusei.playzz.turf.model.SlotStatus;
+import com.example.gakusei.playzz.turf.model.TurfSlot;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

@@ -1,34 +1,67 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <title>Register</title>
+    <meta charset="UTF-8" />
+    <title>Register - Playzz Turf</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" th:href="@{/css/register.css}" />
 </head>
 <body>
-<h2>Register</h2>
+<!-- Navigation -->
+<div th:replace="fragments/nav :: body"></div>
 
-<!-- Show error if any -->
-<p th:if="${error}" th:text="${error}" style="color:red"></p>
+<main class="page">
+    <div class="auth-layout">
+        <!-- Left: Form column -->
+        <section class="auth-left">
+            <h2>Register</h2>
+            <p class="lead">Create an account to book turfs faster and join the community.</p>
 
-<form th:action="@{/api/public/playzzturf/register}" method="post" th:object="${registerRequestDto}">
-    <label>Username:</label>
-    <input type="text" th:field="*{Username}" placeholder="Enter username" required/>
-    <br><br>
+            <!-- Error block -->
+            <p class="form-error" th:if="${error}" th:text="${error}"></p>
 
-    <label>Name:</label>
-    <input type="text" th:field="*{name}" placeholder="Enter full name" required/>
-    <br><br>
+            <!-- Card form -->
+            <form class="form-card" th:action="@{/api/public/playzzturf/register}" method="post" th:object="${registerRequestDto}">
+                <div class="form-grid">
+                    <div>
+                        <label for="username">Username</label>
+                        <input id="username" type="text" th:field="*{Username}" placeholder="Enter username" required />
+                    </div>
 
-    <label>Email:</label>
-    <input type="email" th:field="*{email}" placeholder="Enter email" required/>
-    <br><br>
+                    <div>
+                        <label for="name">Full Name</label>
+                        <input id="name" type="text" th:field="*{name}" placeholder="Enter full name" required />
+                    </div>
 
-    <label>Password:</label>
-    <input type="password" th:field="*{password}" placeholder="Enter password" required/>
-    <br><br>
+                    <div>
+                        <label for="email">Email</label>
+                        <input id="email" type="email" th:field="*{email}" placeholder="Enter email" required />
+                    </div>
 
-    <button type="submit">Register</button>
-</form>
+                    <div>
+                        <label for="password">Password</label>
+                        <input id="password" type="password" th:field="*{password}" placeholder="Enter password" required />
+                    </div>
+                </div>
 
-<p>Already have an account? <a th:href="@{/login}">Login here</a></p>
+                <div class="actions">
+                    <button class="btn btn--primary" type="submit">Register</button>
+                    <a class="link" th:href="@{/login}">Already have an account? Log in</a>
+                </div>
+            </form>
+
+            <p class="footer-hint">By registering, you agree to our terms and policies.</p>
+        </section>
+
+        <!-- Right: Image column -->
+        <aside class="auth-right">
+            <div class="brand-panel">
+                <img class="brand-image" th:src="@{/playzzturf.png}" alt="Playzz Turf logo" />
+                <h3 class="brand-title">Playzz Turf</h3>
+                <p class="brand-copy">Book smarter. Play better. Join a growing community of players.</p>
+            </div>
+        </aside>
+    </div>
+</main>
 </body>
 </html>

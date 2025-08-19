@@ -2,12 +2,14 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <nav>
-  <a href="/api/public/playzzturf/home" th:href="@{/api/public/playzzturf/home}">Home</a> |
-  <a href="/api/public/playzzturf/about" th:href="@{/api/public/playzzturf/about}">About</a> |
-  <a href="/api/public/playzzturf/register" th:href="@{/api/public/playzzturf/register}">Register</a> |
-  <a href="/api/public/playzzturf/login" th:href="@{/api/public/playzzturf/login}">Login</a> |
-  <a href="/api/playzzturf/booking" th:href="@{/api/playzzturf/booking}">Book Slots</a>
+  <div class="nav-inner">
+    <a href="/api/public/playzzturf/home" th:href="@{/api/public/playzzturf/home}">Home</a>
+    <a href="/api/public/playzzturf/about" th:href="@{/api/public/playzzturf/about}">About</a>
+    <a href="/api/public/playzzturf/register" th:href="@{/api/public/playzzturf/register}">Register</a>
+    <a href="/api/public/playzzturf/login" th:href="@{/api/public/playzzturf/login}">Login</a>
+    <a href="/api/playzzturf/booking" th:href="@{/api/playzzturf/booking}">Book Slots</a>
+  </div>
+  <div class="nav-divider"></div>
 </nav>
-<hr/>
 </body>
 </html>

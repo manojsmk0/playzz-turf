@@ -1,65 +1,89 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Login - Playzz Turf</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 50px; }
-        label { display: block; margin: 10px 0 5px; }
-        input { padding: 5px; width: 200px; }
-        button { padding: 5px 10px; margin-top: 10px; }
-        .error { color: red; margin-top: 10px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" th:href="@{/css/login.css}" />
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
+<!-- Navigation -->
+<div th:replace="fragments/nav :: body"></div>
 
-<h2>Login</h2>
+<main class="page">
+    <div class="auth-layout">
+        <!-- Left: Form column -->
+        <section class="auth-left">
+            <h2>Login</h2>
+            <p class="lead">Welcome back. Sign in to manage your bookings and play more.</p>
 
-<div id="errorMsg" class="error"></div>
+            <!-- Server-provided error (optional) -->
+            <p class="form-error" th:if="${error}" th:text="${error}"></p>
+            <!-- Client-side error -->
+            <div id="errorMsg" class="error" style="display:none;"></div>
 
-<form id="loginForm">
-    <label>UserName:</label>
-    <input type="text" id="userName" placeholder="Enter userName" required>
+            <!-- Card form -->
+            <form id="loginForm" class="form-card">
+                <div class="form-grid">
+                    <div>
+                        <label for="userName">Username</label>
+                        <input id="userName" type="text" placeholder="Enter username" required />
+                    </div>
 
-    <label>Password:</label>
-    <input type="password" id="password" placeholder="Enter password" required>
+                    <div>
+                        <label for="password">Password</label>
+                        <input id="password" type="password" placeholder="Enter password" required />
+                    </div>
+                </div>
 
-    <button type="submit">Login</button>
-</form>
+                <div class="actions">
+                    <button class="btn btn--primary" type="submit">Login</button>
+                    <a class="link" th:href="@{/register}">Don’t have an account? Register</a>
+                </div>
+            </form>
+        </section>
 
-<p>Don’t have an account? <a href="/api/public/playzzturf/register">Register here</a></p>
+        <!-- Right: Image column -->
+        <aside class="auth-right">
+            <div class="brand-panel">
+                <img class="brand-image" th:src="@{/playzzturf.png}" alt="Playzz Turf logo" />
+                <h3 class="brand-title">Playzz Turf</h3>
+                <p class="brand-copy">Book smarter. Play better. Join a growing community of players.</p>
+            </div>
+        </aside>
+    </div>
+</main>
 
 <script>
     const form = document.getElementById('loginForm');
     const errorMsg = document.getElementById('errorMsg');
 
     form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+      e.preventDefault();
+      errorMsg.style.display = 'none';
+      errorMsg.textContent = '';
 
-        const userName = document.getElementById('userName').value;
-        const password = document.getElementById('password').value;
+      const userName = document.getElementById('userName').value.trim();
+      const password = document.getElementById('password').value;
 
-        try {
-            // Send form-encoded data
-            const formData = new URLSearchParams();
-            formData.append('userName', userName);
-            formData.append('password', password);
+      try {
+        const formData = new URLSearchParams();
+        formData.append('userName', userName);
+        formData.append('password', password);
 
-            // POST login withCredentials so cookie is set automatically
-            await axios.post('/api/public/playzzturf/login', formData, {
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                withCredentials: true
-            });
+        await axios.post('/api/public/playzzturf/login', formData, {
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          withCredentials: true
+        });
 
-            // Successful login redirects to booking page
-            window.location.href = '/api/playzzturf/booking';
-        } catch (err) {
-            console.error(err);
-            errorMsg.textContent = err.response?.data || 'Login failed. Check userName/password.';
-        }
+        window.location.href = '/api/playzzturf/booking';
+      } catch (err) {
+        console.error(err);
+        errorMsg.textContent = (err.response && (err.response.data?.message || err.response.data)) || 'Login failed. Check username/password.';
+        errorMsg.style.display = 'block';
+      }
     });
 </script>
-
 </body>
 </html>

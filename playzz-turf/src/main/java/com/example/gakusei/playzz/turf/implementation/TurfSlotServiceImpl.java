@@ -17,8 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class TurfSlotServiceImpl implements TurfSlotService {
@@ -64,8 +66,8 @@ public class TurfSlotServiceImpl implements TurfSlotService {
 
             TurfSlot slot = new TurfSlot();
             slot.setSlotId(slotIdCounter);  // Assign 1 to 8 here
-            slot.setTotalSlots(10);
-            slot.setAvailableSlots(10);
+            slot.setTotalSlots(2);
+            slot.setAvailableSlots(2);
             slot.setSlotDate(date);
             slot.setSlotStartTime(slotStart);
             slot.setSlotEndTime(nextSlot);
@@ -84,6 +86,8 @@ public class TurfSlotServiceImpl implements TurfSlotService {
             slotIdCounter++;  // increment counter for next slot
         }
     }
+
+
 
     public List<TurfSlotDto> getAvailableSlotsForUser(Long userId) {
         LocalDate today = LocalDate.now();

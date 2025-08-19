@@ -1,0 +1,68 @@
+/* Themed top navigation for simple <nav> markup */
+nav {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0) 40%),
+    #22c55e; /* natural fresh green */
+  color: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 6px 18px rgba(16,185,129,0.18);
+  width: 100%;
+}
+
+/* Inner container width alignment (matches .container across the site) */
+nav .nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 10px 20px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Links */
+nav a {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.98rem;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: background-color .2s ease, color .2s ease;
+}
+nav a:hover {
+  background: rgba(255,255,255,0.18);
+}
+nav a:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.28);
+}
+
+/* Remove the | separators and rely on spacing instead */
+nav .sep { display: none; }
+
+/* Optional: underline active route (server-side add class="active" when needed) */
+nav a.active {
+  background: rgba(255,255,255,0.22);
+}
+
+/* Thin divider under the bar (replaces <hr/>) */
+.nav-divider {
+  height: 1px;
+  background: linear-gradient(to right, rgba(255,255,255,0.35), rgba(255,255,255,0.0));
+  opacity: 0.5;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  nav .nav-inner {
+    gap: 8px;
+    padding: 8px 14px;
+  }
+  nav a {
+    padding: 8px 10px;
+    font-size: 0.96rem;
+  }
+}
